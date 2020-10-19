@@ -23,7 +23,6 @@ def initialhtml(query):
 
 
 def chapscrapper(url):
-    global linkz,pattern,chapp,imgs,forbidden
     linkarr=[]
     req = Request(url,headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.70'})
     with urllib.request.urlopen(req) as response:
@@ -33,6 +32,13 @@ def chapscrapper(url):
     for i in chaps:
         dud=linkz.findall(i)[0]
         linkarr.append(dud)
+    print(len(linkarr))
+    if len(linkarr) ==0:
+        chaps=linkz.findall(obj)
+        print(chaps)
+        for i in chaps:
+            if 'chapter_' in i:
+                linkarr.append(i)
         
     return [len(chaps),linkarr[::-1]]
 
