@@ -4,8 +4,7 @@ import re
 import time
 import time,subprocess,discord
 import asyncio
-import io
-client = discord.Client()
+import sys
 # Scrapping
 exception=['https://horriblesubs.info/release-schedule/','https://discord.gg/TzuEpf8','reddit.com','https://www.reddit.com/r/4anime']
 
@@ -87,31 +86,48 @@ def imgscrpr(url):
 
     
 
-def initiator(query):
+def initiator(query:str,chapter:int):
     obj=initialhtml(query)
     x=links(obj)
     y=chapscrapper(x[0])
-    z=imgscrpr(y[1][0])
+    z=imgscrpr(y[1][chapter])
     return z
 
 
-
-def fuckit(name):
+def fuckit(name:str,chapter:int=1):
         count=0
         initial=time.time()
-        naem=name
-        links=initiator(naem)
+        links=initiator(name,chapter)
+        filename = f"{name}/{chapter}/"
+        if not os.path.exists(os.path.dirname(filename)):
+            try:
+                os.makedirs(os.path.dirname(filename))
+            except OSError as exc: # Guard against race condition
+                if exc.errno != errno.EEXIST:
+                    raise
         for i in links:
             count=count+1
             req = Request(i,headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36 Edg/85.0.564.70'})
             req.add_header('Referer', 'https://mangakakalot.com/')
             with urllib.request.urlopen(req) as response:
                html = response.read()
-            file=open(f'{count}.jpg','wb')
+            file=open(f'{name}/{chapter}/{count}.jpg','wb')
             file.write(html)
             file.close
-           
-fuckit('houseki no kuni')
-    
 
 
+
+
+linkz=re.compile(r'<a[^>]* href="([^"]*)"')
+pattern=re.compile('(<a rel="nofollow".*>)')
+chapp=re.compile('(<a rel="nofollow" class="chapter-name text-nowrap".*>)')
+imgs=re.compile('[\=,\(][\"|\'].[^\=\"]+\.(?i:jpg|gif|png|bmp)[\"|\']')
+forbidden=['https://mangakakalot.com/manga_list?','register','login']
+
+if(len(sys.argv) > 2):
+    print(f"Getting {sys.argv[1]}'s Chapter {sys.argv[2]}")
+else:
+    print("fetching multiple chapters...")
+
+for _ in range(int(sys.argv[2]),int(sys.argv[2])+int(sys.argv[3])):
+    fuckit(sys.argv[1],_)
